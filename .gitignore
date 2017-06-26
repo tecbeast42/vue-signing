@@ -57,3 +57,6 @@ typings/
 # dotenv environment variables file
 .env
 
+demo/app.build.js
+dist/
+mix-manifest.json
