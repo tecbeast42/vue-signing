@@ -1,21 +1,13 @@
 <style lang="scss" scoped>
     .vue-signing {
-        // height: 100%;
-        // min-height: 100px;
-        // width: 100%;
         display: inline-block;
         border: 1px solid #000;
-    }
-
-    .vue-signing__canvas {
-        // width: 100%;
-        // height: 100%;
     }
 </style>
 
 <template>
-    <section class="vue-signing">
-        <canvas class="vue-signing__canvas" ref="canvas" width="500" height="500">Render me</canvas>
+    <section class="vue-signing" ref="canvasParent">
+        <canvas class="vue-signing__canvas" ref="canvas" :width="currentWidth" :height="height">Render me</canvas>
     </section>
 </template>
 
@@ -23,6 +15,7 @@
     export default {
         data () {
             return {
+                currentWidth: 0,
                 context: null,
                 drawPosition: {
                     x: 0,
@@ -48,10 +41,12 @@
 
             this.$refs.canvas.addEventListener("mouseup", (event) => {
                 this.drawing = false;
+                this.dispatchSignatureImage();
             });
 
             this.$refs.canvas.addEventListener("mouseleave", () => {
                 this.drawing = false;
+                this.dispatchSignatureImage();
             });
 
             this.$refs.canvas.addEventListener("mousemove", (event) => {
@@ -68,12 +63,15 @@
             this.$refs.canvas.addEventListener("touchend", (event) => {
                 event.preventDefault();
                 this.drawing = false;
+                this.dispatchSignatureImage();
             });
 
             this.$refs.canvas.addEventListener("touchmove", (event) => {
                 event.preventDefault();
                 this.drawPosition = this.getTouchPosition(event);
             });
+
+            this.currentWidth = this.width === 0 ? this.$refs.canvasParent.parentElement.clientWidth : this.width;
 
             this.drawInterval = setInterval(this.renderCanvas, 1000/120);
         },
@@ -106,10 +104,24 @@
                 }
                 this.lastDrawPosition = this.drawPosition;
             },
-            saveSignature () {
-                const image = this.$refs.canvas.toDataURL().replace("image/png", "image/octet-stream");
-                window.location.href = image;
+            dispatchSignatureImage () {
+                this.$emit('input', this.$refs.canvas.toDataURL());
             }
         },
+        props: {
+            height: {
+                required: false,
+                type: Number,
+                default: 500,
+            },
+            width: {
+                required: false,
+                type: Number,
+                default: 0,
+            },
+            value: {
+                required: false,
+            }
+        }
     };
 </script>
